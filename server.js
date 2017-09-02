@@ -1,3 +1,4 @@
+//  OpenShift sample Node application
 var express = require('express'),
     fs = require('fs'),
     app = express(),
@@ -56,29 +57,22 @@ var initDb = function(callback) {
         console.log('Connected to MongoDB at: %s', mongoURL);
     });
 };
-var kol = 0;
+
 app.get('/', function(req, res) {
     // try to initialize the db on every request if it's not already
     // initialized.
     if (!db) {
-        console.log("init db");
         initDb(function(err) {});
     }
     if (db) {
         var col = db.collection('counts');
-
-        var artist = { count: kol, date: Date.now() };
-        kol++;
-        col.insert(artist, function(err, result) {
-            if (err) {
-                console.log(err);
-                res.sendStatus(500);
-            }
-            res.send(artist);
+        // Create a document with request IP and current time of request
+        col.insert({ ip: req.ip, date: Date.now() });
+        col.count(function(err, count) {
+            res.send(count);
         });
     } else {
-        console.log("error init db");
-        res.send("Db not connection");
+        res.send("O-o-o");
     }
 });
 
