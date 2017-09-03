@@ -68,9 +68,18 @@ app.get('/', function(req, res) {
         var col = db.collection('counts');
         // Create a document with request IP and current time of request
         col.insert({ ip: req.ip, date: Date.now() });
-        col.count(function(err, count) {
-            res.send({ pageCountMessage: count, dbInfo: dbDetails });
+
+        col.find().toArray(function(err, docs) {
+            if (err) {
+                console.log(err);
+                return res.sendStatus(500);
+            }
+            res.send(docs);
         });
+        // col.count(function(err, count) {
+
+        //     res.send('{ pageCountMessage: ' + count + ', dbInfo:' + dbDetails + '}');
+        // });
     } else {
         res.send("O-o-o");
     }
