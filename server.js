@@ -69,7 +69,7 @@ app.get('/', function(req, res) {
         // Create a document with request IP and current time of request
         col.insert({ ip: req.ip, date: Date.now() });
         col.count(function(err, count) {
-            res.send(count);
+            res.send({ pageCountMessage: count, dbInfo: dbDetails });
         });
     } else {
         res.send("O-o-o");
