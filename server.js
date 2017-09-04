@@ -10,7 +10,7 @@ Object.assign = require('object-assign')
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
 
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
+var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8070,
     ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
     mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
     mongoURLLabel = "";
@@ -38,7 +38,8 @@ var db = null,
     dbDetails = new Object();
 
 var initDb = function(callback) {
-    if (mongoURL == null) return;
+    if (mongoURL == null)
+        mongoURL = 'mongodb://127.0.0.1:27017'
 
     var mongodb = require('mongodb');
     if (mongodb == null) return;
@@ -74,12 +75,8 @@ app.get('/', function(req, res) {
                 console.log(err);
                 return res.sendStatus(500);
             }
-            res.send(docs);
+            res.json(200, docs);
         });
-        // col.count(function(err, count) {
-
-        //     res.send('{ pageCountMessage: ' + count + ', dbInfo:' + dbDetails + '}');
-        // });
     } else {
         res.send("O-o-o");
     }
