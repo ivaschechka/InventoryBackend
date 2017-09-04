@@ -34,28 +34,40 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
     }
 }
 var db = null,
-    dbDetails = new Object();
+    User = null;
 
 var initDb = function(callback) {
     if (mongoURL == null)
         mongoURL = 'mongodb://127.0.0.1:27017'
 
-    var mongodb = require('mongodb');
-    if (mongodb == null) return;
-
-    mongodb.connect(mongoURL, function(err, conn) {
-        if (err) {
-            callback(err);
-            return;
-        }
-
-        db = conn;
-        dbDetails.databaseName = db.databaseName;
-        dbDetails.url = mongoURLLabel;
-        dbDetails.type = 'MongoDB';
-
-        console.log('Connected to MongoDB at: %s', mongoURL);
+    var mongoose = require("mongoose");
+    var Schema = mongoose.Schema;
+    if (mongoose == null) return;
+    // для работы с promise
+    mongoose.Promise = global.Promise;
+    mongoose.connect(mongoURL, {
+        useMongoClient: true,
     });
+    db = mongoose;
+    // установка схемы
+    var userScheme = new Schema({
+        name: String,
+        age: Number
+    }, { versionKey: false });
+    User = mongoose.model("User", userScheme);
+    var user = new User({
+        name: "Bill",
+        age: 45
+    });
+
+    user.save()
+        .then(function(doc) {
+            console.log("Сохранен объект", doc);
+        })
+        .catch(function(err) {
+            console.log(err);
+        });
+    console.log('Connected to MongoDB at: %s', mongoURL);
 };
 
 app.get('/', function(req, res) {
@@ -63,15 +75,13 @@ app.get('/', function(req, res) {
         initDb(function(err) {});
     }
     if (db) {
-        var col = db.collection('counts');
 
-        col.insert({ ip: req.ip, date: Date.now() });
-
-        col.find().toArray(function(err, docs) {
+        var users = User.find({}, function(err, docs) {
             if (err) {
                 console.log(err);
                 return res.sendStatus(500);
             }
+            console.log(docs);
             res.json(200, docs);
         });
     } else {
@@ -86,8 +96,14 @@ app.get('/pagecount', function(req, res) {
         initDb(function(err) {});
     }
     if (db) {
-        db.collection('counts').count(function(err, count) {
-            res.send('{ pageCount: ' + count + '}');
+
+        var users = User.find({}).count(function(err, docs) {
+            if (err) {
+                console.log(err);
+                return res.sendStatus(500);
+            }
+            console.log(docs);
+            res.send("count" + docs);
         });
     } else {
         res.send('{ pageCount: -1 }');
