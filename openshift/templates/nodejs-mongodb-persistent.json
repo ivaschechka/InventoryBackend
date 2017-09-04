@@ -43,8 +43,8 @@
             "spec": {
                 "ports": [{
                     "name": "web",
-                    "port": 8070,
-                    "targetPort": 8070
+                    "port": 8080,
+                    "targetPort": 8080
                 }],
                 "selector": {
                     "name": "${NAME}"
@@ -188,7 +188,7 @@
                             "name": "nodejs-mongo-persistent",
                             "image": " ",
                             "ports": [{
-                                "containerPort": 8070
+                                "containerPort": 8080
                             }],
                             "env": [{
                                     "name": "DATABASE_SERVICE_NAME",
@@ -231,7 +231,7 @@
                                 "initialDelaySeconds": 3,
                                 "httpGet": {
                                     "path": "/pagecount",
-                                    "port": 8070
+                                    "port": 8080
                                 }
                             },
                             "livenessProbe": {
@@ -239,7 +239,7 @@
                                 "initialDelaySeconds": 30,
                                 "httpGet": {
                                     "path": "/pagecount",
-                                    "port": 8070
+                                    "port": 8080
                                 }
                             },
                             "resources": {

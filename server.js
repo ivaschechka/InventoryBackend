@@ -1,4 +1,3 @@
-//  OpenShift sample Node application
 var express = require('express'),
     fs = require('fs'),
     app = express(),
@@ -10,7 +9,7 @@ Object.assign = require('object-assign')
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
 
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8070,
+var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
     mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
     mongoURLLabel = "";
@@ -60,14 +59,12 @@ var initDb = function(callback) {
 };
 
 app.get('/', function(req, res) {
-    // try to initialize the db on every request if it's not already
-    // initialized.
     if (!db) {
         initDb(function(err) {});
     }
     if (db) {
         var col = db.collection('counts');
-        // Create a document with request IP and current time of request
+
         col.insert({ ip: req.ip, date: Date.now() });
 
         col.find().toArray(function(err, docs) {

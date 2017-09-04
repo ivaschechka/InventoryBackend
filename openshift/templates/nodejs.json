@@ -30,8 +30,8 @@
             "spec": {
                 "ports": [{
                     "name": "web",
-                    "port": 8070,
-                    "targetPort": 8070
+                    "port": 8080,
+                    "targetPort": 8080
                 }],
                 "selector": {
                     "name": "${NAME}"
@@ -175,14 +175,14 @@
                             "name": "nodejs-example",
                             "image": " ",
                             "ports": [{
-                                "containerPort": 8070
+                                "containerPort": 8080
                             }],
                             "readinessProbe": {
                                 "timeoutSeconds": 3,
                                 "initialDelaySeconds": 3,
                                 "httpGet": {
                                     "path": "/",
-                                    "port": 8070
+                                    "port": 8080
                                 }
                             },
                             "livenessProbe": {
@@ -190,7 +190,7 @@
                                 "initialDelaySeconds": 30,
                                 "httpGet": {
                                     "path": "/",
-                                    "port": 8070
+                                    "port": 8080
                                 }
                             },
                             "resources": {
