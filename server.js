@@ -9,7 +9,7 @@ Object.assign = require('object-assign')
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
 
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
+var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8070,
     ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
     mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
     mongoURLLabel = "";
@@ -58,14 +58,32 @@ var initDb = function(callback) {
     });
 };
 
+
+app.get('/data/migration', function(req, res) {
+    if (!db) {
+        initDb(function(err) {});
+    }
+    if (db) {
+        var dataCategories = db.collection('categories');
+        dataCategories.remove({});
+        categories = require('./migration');
+        dataCategories.insert(categories, function(err, result) {
+            if (err)
+                res.send(err);
+            else
+                res.send(result)
+        });
+    } else {
+        res.send("Error migration");
+    }
+});
+
 app.get('/', function(req, res) {
     if (!db) {
         initDb(function(err) {});
     }
     if (db) {
-        var col = db.collection('counts');
-
-        col.insert({ ip: req.ip, date: Date.now() });
+        var col = db.collection('categories');
 
         col.find().toArray(function(err, docs) {
             if (err) {
@@ -86,8 +104,8 @@ app.get('/pagecount', function(req, res) {
         initDb(function(err) {});
     }
     if (db) {
-        db.collection('counts').count(function(err, count) {
-            res.send('{ pageCount: ' + count + '}');
+        db.collection('categories').count(function(err, count) {
+            res.send('{ categories: ' + count + '}');
         });
     } else {
         res.send('{ pageCount: -1 }');
