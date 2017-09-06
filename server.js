@@ -2,7 +2,8 @@ var express = require('express'),
     fs = require('fs'),
     app = express(),
     eps = require('ejs'),
-    morgan = require('morgan');
+    morgan = require('morgan'),
+    cors  =  require('cors');
 
 Object.assign = require('object-assign')
 
@@ -78,7 +79,7 @@ app.get('/data/migration', function(req, res) {
     }
 });
 
-app.get('/', function(req, res) {
+app.get('/', cors(), function(req, res,  next) {
     if (!db) {
         initDb(function(err) {});
     }
