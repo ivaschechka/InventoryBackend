@@ -10,10 +10,6 @@ Object.assign = require('object-assign')
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
 app.use(function(req, res, next) {
-    var origins = [
-        '*'
-    ];
-
     res.header('Access-Control-Allow-Origin', req.headers.origin);
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -87,8 +83,7 @@ app.get('/data/migration', function(req, res) {
         res.send("Error migration");
     }
 });
-
-app.get('/', cors(), function(req, res,  next) {
+app.get('/', function(req, res,  next) {
     if (!db) {
         initDb(function(err) {});
     }
