@@ -3,7 +3,9 @@ var express = require('express'),
     app = express(),
     eps = require('ejs'),
     morgan = require('morgan'),
-    cors  =  require('cors');
+    cors  =  require('cors'),
+    bodyParser = require('body-parser'),
+    objectId = require('mongodb').ObjectID;
 
 Object.assign = require('object-assign')
 
@@ -16,7 +18,10 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8070,
     ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
     mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
     mongoURLLabel = "";
@@ -84,6 +89,8 @@ app.get('/data/migration', function(req, res) {
         res.send("Error migration");
     }
 });
+
+
 app.get('/', function(req, res,  next) {
     if (!db) {
         initDb(function(err) {});
@@ -100,6 +107,64 @@ app.get('/', function(req, res,  next) {
         });
     } else {
         res.send("O-o-o");
+    }
+});
+
+app.post('/categories', function(req, res, next) {
+    if (!db) {
+        initDb(function(err) {});
+    }
+    if (db) {
+        var category = {
+            name: req.body.name,
+            products: [],
+            imgPath: req.body.imgPath
+        };
+        var categoriesDb = db.collection('categories');
+        categoriesDb.insert(category, function(err, result) {
+            if (err) {
+                console.log(err);
+                res.sendStatus(500);
+            }
+            res.json(200, category);
+        });
+    }
+});
+
+app.put('/categories/:id', function(req, res, next) {
+    if (!db) {
+        initDb(function(err) {});
+    }
+    if (db) {
+        var categoriesDb = db.collection('categories');
+        categoriesDb.updateOne({ _id: objectId(req.params.id) }, {
+                name: req.body.name,
+                imgPath: req.body.imgPath,
+                products: req.body.products
+            },
+            function(err, result) {
+                if (err) {
+                    console.log(err);
+                    res.sendStatus(500);
+                }
+                res.json(200);
+            });
+    }
+});
+
+app.delete('/categories/:id', function(req, res, next) {
+    if (!db) {
+        initDb(function(err) {});
+    }
+    if (db) {
+        var categoriesDb = db.collection('categories');
+        categoriesDb.deleteOne({ _id: objectId(req.params.id) }, function(err, result) {
+            if (err) {
+                console.log(err);
+                res.sendStatus(500);
+            }
+            res.json(200);
+        });
     }
 });
 
