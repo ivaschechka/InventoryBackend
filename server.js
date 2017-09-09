@@ -5,7 +5,9 @@ var express = require('express'),
     morgan = require('morgan'),
     cors  =  require('cors'),
     bodyParser = require('body-parser'),
-    objectId = require('mongodb').ObjectID;
+    objectId = require('mongodb').ObjectID,
+    db = require('./db'),
+    categoriesController = require('./controllers/categories');
 
 Object.assign = require('object-assign')
 
@@ -21,7 +23,7 @@ app.use(function(req, res, next) {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8070,
+var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
     mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
     mongoURLLabel = "";
@@ -45,27 +47,16 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 
     }
 }
-var db = null,
-    dbDetails = new Object();
 
 var initDb = function(callback) {
     if (mongoURL == null)
-        mongoURL = 'mongodb://127.0.0.1:27017'
+        mongoURL = 'mongodb://127.0.0.1:27017';
 
-    var mongodb = require('mongodb');
-    if (mongodb == null) return;
-
-    mongodb.connect(mongoURL, function(err, conn) {
+    db.connect(mongoURL, function(err) {
         if (err) {
             callback(err);
             return;
         }
-
-        db = conn;
-        dbDetails.databaseName = db.databaseName;
-        dbDetails.url = mongoURLLabel;
-        dbDetails.type = 'MongoDB';
-
         console.log('Connected to MongoDB at: %s', mongoURL);
     });
 };
@@ -91,98 +82,77 @@ app.get('/data/migration', function(req, res) {
 });
 
 
-app.get('/', function(req, res,  next) {
+app.get('/categories', categoriesController.all);
+app.get('/categories/:id', categoriesController.findById);
+app.post('/categories', categoriesController.create);
+app.put('/categories/:id', categoriesController.update);
+app.delete('/categories/:id', categoriesController.delete);
+
+app.post('/products', function(req, res, next) {
     if (!db) {
         initDb(function(err) {});
     }
     if (db) {
-        var col = db.collection('categories');
-
-        col.find().toArray(function(err, docs) {
-            if (err) {
-                console.log(err);
-                return res.sendStatus(500);
-            }
-            res.json(200, docs);
-        });
-    } else {
-        res.send("O-o-o");
-    }
-});
-
-app.post('/categories', function(req, res, next) {
-    if (!db) {
-        initDb(function(err) {});
-    }
-    if (db) {
-        var category = {
-            name: req.body.name,
-            products: [],
-            imgPath: req.body.imgPath
-        };
-        var categoriesDb = db.collection('categories');
-        categoriesDb.insert(category, function(err, result) {
+        var categoriesDb = db.get().collection('categories');
+        categoriesDb.findOne({ _id: objectId(req.body._id) }, function(err, doc) {
             if (err) {
                 console.log(err);
                 res.sendStatus(500);
             }
-            res.json(200, category);
-        });
+            var category = doc;
+            var product = {
+                _id: objectId(),
+                name: req.body.category.name,
+                count: 0,
+                imgPath: req.body.category.imgPath
+            }
+
+            category.products.push(product);
+
+            categoriesDb.updateOne({ _id: category._id }, { $set: { products: category.products } },
+                function(err, result) {
+                    if (err) {
+                        console.log(err);
+                        res.sendStatus(500);
+                    }
+                });
+            res.json(200, product);
+        })
     }
 });
 
-app.put('/categories/:id', function(req, res, next) {
+app.post('/products:id', function(req, res, next) {
     if (!db) {
         initDb(function(err) {});
     }
     if (db) {
-        var categoriesDb = db.collection('categories');
-        categoriesDb.updateOne({ _id: objectId(req.params.id) }, {
-                name: req.body.name,
-                imgPath: req.body.imgPath,
-                products: req.body.products
-            },
-            function(err, result) {
-                if (err) {
-                    console.log(err);
-                    res.sendStatus(500);
-                }
-                res.json(200);
-            });
-    }
-});
-
-app.delete('/categories/:id', function(req, res, next) {
-    if (!db) {
-        initDb(function(err) {});
-    }
-    if (db) {
-        var categoriesDb = db.collection('categories');
-        categoriesDb.deleteOne({ _id: objectId(req.params.id) }, function(err, result) {
+        var categoriesDb = db.get().collection('categories');
+        categoriesDb.findOne({ _id: objectId(req.body._id) }, function(err, doc) {
             if (err) {
                 console.log(err);
                 res.sendStatus(500);
             }
-            res.json(200);
-        });
+            var category = doc;
+            var product = {
+                _id: objectId(),
+                name: req.body.category.name,
+                count: 0,
+                imgPath: req.body.category.imgPath
+            }
+
+            category.products.push(product);
+
+            categoriesDb.updateOne({ _id: category._id }, { $set: { products: category.products } },
+                function(err, result) {
+                    if (err) {
+                        console.log(err);
+                        res.sendStatus(500);
+                    }
+                });
+            res.json(200, product);
+        })
     }
 });
-
-app.get('/pagecount', function(req, res) {
-    // try to initialize the db on every request if it's not already
-    // initialized.
-    if (!db) {
-        initDb(function(err) {});
-    }
-    if (db) {
-        db.collection('categories').count(function(err, count) {
-            res.send('{ categories: ' + count + '}');
-        });
-    } else {
-        res.send('{ pageCount: -1 }');
-    }
-});
-
 // error handling
 app.use(function(err, req, res, next) {
     console.error(err.stack);
