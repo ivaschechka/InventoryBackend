@@ -21,7 +21,7 @@ app.use(function(req, res, next) {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8070,
+var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
     mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
     mongoURLLabel = "";
@@ -52,8 +52,7 @@ var initDb = function(callback) {
     if (mongoURL == null)
         mongoURL = 'mongodb://127.0.0.1:27017'
 
-    var mongodb = require('mongodb');
-    if (mongodb == null) return;
+    var mongodb = require('./db');
 
     mongodb.connect(mongoURL, function(err, conn) {
         if (err) {
@@ -61,7 +60,7 @@ var initDb = function(callback) {
             return;
         }
 
-        db = conn;
+        db = mongodb.get();
         dbDetails.databaseName = db.databaseName;
         dbDetails.url = mongoURLLabel;
         dbDetails.type = 'MongoDB';
