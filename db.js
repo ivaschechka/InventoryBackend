@@ -11,7 +11,6 @@ exports.connect = function(url, done) {
     mongodb.connect(url, function(err, db) {
         if (err) {
             return done(err);
-            return;
         }
         state.db = db;
         done();
