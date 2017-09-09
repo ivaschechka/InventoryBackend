@@ -6,11 +6,11 @@ var express = require('express'),
     cors  =  require('cors'),
     bodyParser = require('body-parser'),
     objectId = require('mongodb').ObjectID,
-    db = require('./db'),
     categoriesController = require('./controllers/categories');
 
 Object.assign = require('object-assign')
-
+var db = require('./db'),
+    dbDetails = new Object();
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
 app.use(cors());
@@ -57,6 +57,9 @@ var initDb = function(callback) {
             callback(err);
             return;
         }
+        dbDetails.databaseName = db.get().databaseName;
+        dbDetails.url = mongoURLLabel;
+        dbDetails.type = 'MongoDB';
         console.log('Connected to MongoDB at: %s', mongoURL);
     });
 };
