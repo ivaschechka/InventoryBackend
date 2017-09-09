@@ -6,7 +6,7 @@ var express = require('express'),
     cors  =  require('cors'),
     bodyParser = require('body-parser'),
     objectId = require('mongodb').ObjectID;
-
+var categoriesController = require('./controllers/categories');
 Object.assign = require('object-assign')
 
 app.engine('html', require('ejs').renderFile);
@@ -109,63 +109,11 @@ app.get('/', function(req, res,  next) {
     }
 });
 
-app.post('/categories', function(req, res, next) {
-    if (!db) {
-        initDb(function(err) {});
-    }
-    if (db) {
-        var category = {
-            name: req.body.name,
-            products: [],
-            imgPath: req.body.imgPath
-        };
-        var categoriesDb = db.collection('categories');
-        categoriesDb.insert(category, function(err, result) {
-            if (err) {
-                console.log(err);
-                res.sendStatus(500);
-            }
-            res.json(200, category);
-        });
-    }
-});
-
-app.put('/categories/:id', function(req, res, next) {
-    if (!db) {
-        initDb(function(err) {});
-    }
-    if (db) {
-        var categoriesDb = db.collection('categories');
-        categoriesDb.updateOne({ _id: objectId(req.params.id) }, {
-                name: req.body.name,
-                imgPath: req.body.imgPath,
-                products: req.body.products
-            },
-            function(err, result) {
-                if (err) {
-                    console.log(err);
-                    res.sendStatus(500);
-                }
-                res.json(200);
-            });
-    }
-});
-
-app.delete('/categories/:id', function(req, res, next) {
-    if (!db) {
-        initDb(function(err) {});
-    }
-    if (db) {
-        var categoriesDb = db.collection('categories');
-        categoriesDb.deleteOne({ _id: objectId(req.params.id) }, function(err, result) {
-            if (err) {
-                console.log(err);
-                res.sendStatus(500);
-            }
-            res.json(200);
-        });
-    }
-});
+app.get('/categories', categoriesController.all); // Просмотр всех категорий
+app.get('/categories/:id', categoriesController.findById); // Просмотр категории id
+app.post('/categories', categoriesController.create); // Добавление новой категории
+app.put('/categories/:id', categoriesController.update); // Обновление категории id
+app.delete('/categories/:id', categoriesController.delete); // Удаление категории id
 
 app.get('/pagecount', function(req, res) {
     // try to initialize the db on every request if it's not already
