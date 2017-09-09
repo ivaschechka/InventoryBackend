@@ -50,16 +50,21 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 
 var initDb = function(callback) {
     if (mongoURL == null)
-    // mongoURL = 'mongodb://127.0.0.1:27017';
-        return;
-    db.connect(mongoURL, function(err) {
+        mongoURL = 'mongodb://127.0.0.1:27017'
+
+    var mongodb = require('mongodb');
+    if (mongodb == null) return;
+
+    mongodb.connect(mongoURL, function(err, conn) {
         if (err) {
             callback(err);
             return;
         }
-        dbDetails.databaseName = db.get().databaseName;
+
+        dbDetails.databaseName = db.databaseName;
         dbDetails.url = mongoURLLabel;
         dbDetails.type = 'MongoDB';
+
         console.log('Connected to MongoDB at: %s', mongoURL);
     });
 };
