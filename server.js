@@ -5,11 +5,11 @@ var express = require('express'),
     morgan = require('morgan'),
     cors  =  require('cors'),
     bodyParser = require('body-parser'),
-    objectId = require('mongodb').ObjectID;
-// categoriesController = require('./controllers/categories');
+    objectId = require('mongodb').ObjectID,
+    categoriesController = require('./controllers/categories');
 
 Object.assign = require('object-assign')
-var db = null, // require('./db'),
+var db = require('./db'),
     dbDetails = new Object();
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
@@ -51,17 +51,13 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 var initDb = function(callback) {
     if (mongoURL == null)
         mongoURL = 'mongodb://127.0.0.1:27017'
-
-    var mongodb = require('mongodb');
-    if (mongodb == null) return;
-
-    mongodb.connect(mongoURL, function(err, conn) {
+    db.connect(mongoURL, function(err, conn) {
         if (err) {
             callback(err);
             return;
         }
 
-        dbDetails.databaseName = conn.databaseName;
+        dbDetails.databaseName = db.get().databaseName;
         dbDetails.url = mongoURLLabel;
         dbDetails.type = 'MongoDB';
 
@@ -90,77 +86,77 @@ app.get('/data/migration', function(req, res) {
 });
 
 
-// app.get('/categories', categoriesController.all); // Просмотр всех категорий
-// app.get('/categories/:id', categoriesController.findById); // Просмотр категории id
-// app.post('/categories', categoriesController.create); // Добавление новой категории
-// app.put('/categories/:id', categoriesController.update); // Обновление категории id
-// app.delete('/categories/:id', categoriesController.delete); // Удаление категории id
+app.get('/categories', categoriesController.all); // Просмотр всех категорий
+app.get('/categories/:id', categoriesController.findById); // Просмотр категории id
+app.post('/categories', categoriesController.create); // Добавление новой категории
+app.put('/categories/:id', categoriesController.update); // Обновление категории id
+app.delete('/categories/:id', categoriesController.delete); // Удаление категории id
 
-// app.post('/products', function(req, res, next) {
-//     if (!db) {
-//         initDb(function(err) {});
-//     }
-//     if (db) {
-//         var categoriesDb = db.get().collection('categories');
-//         categoriesDb.findOne({ _id: objectId(req.body._id) }, function(err, doc) {
-//             if (err) {
-//                 console.log(err);
-//                 res.sendStatus(500);
-//             }
-//             var category = doc;
-//             var product = {
-//                 _id: objectId(),
-//                 name: req.body.category.name,
-//                 count: 0,
-//                 imgPath: req.body.category.imgPath
-//             }
+app.post('/products', function(req, res, next) {
+    if (!db) {
+        initDb(function(err) {});
+    }
+    if (db) {
+        var categoriesDb = db.get().collection('categories');
+        categoriesDb.findOne({ _id: objectId(req.body._id) }, function(err, doc) {
+            if (err) {
+                console.log(err);
+                res.sendStatus(500);
+            }
+            var category = doc;
+            var product = {
+                _id: objectId(),
+                name: req.body.category.name,
+                count: 0,
+                imgPath: req.body.category.imgPath
+            }
 
-//             category.products.push(product);
+            category.products.push(product);
 
-//             categoriesDb.updateOne({ _id: category._id }, { $set: { products: category.products } },
-//                 function(err, result) {
-//                     if (err) {
-//                         console.log(err);
-//                         res.sendStatus(500);
-//                     }
-//                 });
-//             res.json(200, product);
-//         })
-//     }
-// });
+            categoriesDb.updateOne({ _id: category._id }, { $set: { products: category.products } },
+                function(err, result) {
+                    if (err) {
+                        console.log(err);
+                        res.sendStatus(500);
+                    }
+                });
+            res.json(200, product);
+        })
+    }
+});
 
-// app.post('/products:id', function(req, res, next) {
-//     if (!db) {
-//         initDb(function(err) {});
-//     }
-//     if (db) {
-//         var categoriesDb = db.get().collection('categories');
-//         categoriesDb.findOne({ _id: objectId(req.body._id) }, function(err, doc) {
-//             if (err) {
-//                 console.log(err);
-//                 res.sendStatus(500);
-//             }
-//             var category = doc;
-//             var product = {
-//                 _id: objectId(),
-//                 name: req.body.category.name,
-//                 count: 0,
-//                 imgPath: req.body.category.imgPath
-//             }
+app.post('/products:id', function(req, res, next) {
+    if (!db) {
+        initDb(function(err) {});
+    }
+    if (db) {
+        var categoriesDb = db.get().collection('categories');
+        categoriesDb.findOne({ _id: objectId(req.body._id) }, function(err, doc) {
+            if (err) {
+                console.log(err);
+                res.sendStatus(500);
+            }
+            var category = doc;
+            var product = {
+                _id: objectId(),
+                name: req.body.category.name,
+                count: 0,
+                imgPath: req.body.category.imgPath
+            }
 
-//             category.products.push(product);
+            category.products.push(product);
 
-//             categoriesDb.updateOne({ _id: category._id }, { $set: { products: category.products } },
-//                 function(err, result) {
-//                     if (err) {
-//                         console.log(err);
-//                         res.sendStatus(500);
-//                     }
-//                 });
-//             res.json(200, product);
-//         })
-//     }
-// });
+            categoriesDb.updateOne({ _id: category._id }, { $set: { products: category.products } },
+                function(err, result) {
+                    if (err) {
+                        console.log(err);
+                        res.sendStatus(500);
+                    }
+                });
+            res.json(200, product);
+        })
+    }
+});
 // error handling
 app.use(function(err, req, res, next) {
     console.error(err.stack);
