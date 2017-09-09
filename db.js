@@ -9,6 +9,7 @@ exports.connect = function(url, done) {
         return done();
     }
     mongodb.connect(url, function(err, db) {
+        console.log("CONNECT TO DB " + url);
         if (err) {
             return done(err);
         }

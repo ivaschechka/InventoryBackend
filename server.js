@@ -50,8 +50,8 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 
 var initDb = function(callback) {
     if (mongoURL == null)
-        mongoURL = 'mongodb://127.0.0.1:27017';
-
+    // mongoURL = 'mongodb://127.0.0.1:27017';
+        return;
     db.connect(mongoURL, function(err) {
         if (err) {
             callback(err);
@@ -82,11 +82,11 @@ app.get('/data/migration', function(req, res) {
 });
 
 
-app.get('/categories', categoriesController.all);
-app.get('/categories/:id', categoriesController.findById);
-app.post('/categories', categoriesController.create);
-app.put('/categories/:id', categoriesController.update);
-app.delete('/categories/:id', categoriesController.delete);
+app.get('/categories', categoriesController.all); // Просмотр всех категорий
+app.get('/categories/:id', categoriesController.findById); // Просмотр категории id
+app.post('/categories', categoriesController.create); // Добавление новой категории
+app.put('/categories/:id', categoriesController.update); // Обновление категории id
+app.delete('/categories/:id', categoriesController.delete); // Удаление категории id
 
 app.post('/products', function(req, res, next) {
     if (!db) {
