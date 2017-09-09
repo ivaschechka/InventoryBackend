@@ -71,10 +71,9 @@ app.get('/data/migration', function(req, res) {
         initDb(function(err) {});
     }
     if (db) {
-        var dataCategories = db.collection('categories');
-        dataCategories.remove({});
+        db.get().collection('categories').remove({});
         categories = require('./migration');
-        dataCategories.insert(categories, function(err, result) {
+        db.get().collection('categories').insert(categories, function(err, result) {
             if (err)
                 res.send(err);
             else
