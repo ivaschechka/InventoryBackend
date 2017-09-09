@@ -11,17 +11,7 @@ describe('Basic routes tests', function() {
 
     it('GET to / should return 200', function(done) {
         chai.request(reqServer)
-            .get('/')
-            .end(function(err, res) {
-                res.should.have.status(200);
-                done();
-            })
-
-    })
-
-    it('GET to /pagecount should return 200', function(done) {
-        chai.request(reqServer)
-            .get('/pagecount')
+            .get('/categories')
             .end(function(err, res) {
                 res.should.have.status(200);
                 done();
