@@ -84,6 +84,9 @@ app.get('/data/migration', function(req, res) {
     }
 });
 
+app.get('/', function(req, res) {
+    res.send("HOME API");
+})
 
 app.get('/categories', categoriesController.all); // Просмотр всех категорий
 app.get('/categories/:id', categoriesController.findById); // Просмотр категории id
