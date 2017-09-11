@@ -8,12 +8,6 @@ var express = require('express'),
     objectId = require('mongodb').ObjectID;
 var categoriesController = require('./controllers/categories');
 Object.assign = require('object-assign')
-    // parse various different custom JSON types as JSON 
-app.use(bodyParser.json({ type: 'application/*+json' }))
-    // parse some custom thing into a Buffer 
-app.use(bodyParser.raw({ type: 'application/vnd.custom-type' }))
-    // parse an HTML body into a string 
-app.use(bodyParser.text({ type: 'text/html' }))
 var jsonParser = bodyParser.json()
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
@@ -115,8 +109,8 @@ app.get('/', function(req, res,  next) {
 
 app.get('/categories', categoriesController.all); // Просмотр всех категорий
 app.get('/categories/:id', categoriesController.findById); // Просмотр категории id
-app.post('/categories', categoriesController.create); // Добавление новой категории
-app.put('/categories/:id', categoriesController.update); // Обновление категории id
+app.post('/categories', jsonParser, categoriesController.create); // Добавление новой категории
+app.put('/categories/:id', jsonParser, categoriesController.update); // Обновление категории id
 app.delete('/categories/:id', categoriesController.delete); // Удаление категории id
 
 app.get('/pagecount', function(req, res) {
