@@ -13,20 +13,28 @@ Object.assign = require('object-assign')
 app.use(bodyParser.urlencoded({ extended: false }))
     // parse application/json 
 app.use(bodyParser.json())
-    // app.use(function(req, res) {
-    //     res.setHeader('Content-Type', 'text/plain')
-    //     res.write('you posted:\n')
-    //     res.end(JSON.stringify(req.body, null, 2))
-    // })
-
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
 app.use(cors());
 app.use(function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', req.headers.origin);
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
+    if (req.method === 'OPTIONS') {
+        console.log('!OPTIONS');
+        var headers = {};
+        // IE8 does not allow domains to be specified, just the *
+        // headers["Access-Control-Allow-Origin"] = req.headers.origin;
+        headers["Access-Control-Allow-Origin"] = "*";
+        headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";
+        headers["Access-Control-Allow-Credentials"] = false;
+        headers["Access-Control-Max-Age"] = '86400'; // 24 hours
+        headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept";
+        res.writeHead(200, headers);
+        res.end();
+    } else {
+        res.header('Access-Control-Allow-Origin', req.headers.origin);
+        res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        next();
+    }
 });
 
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
@@ -77,7 +85,6 @@ var initDb = function(callback) {
     });
 };
 
-
 app.get('/data/migration', function(req, res) {
     if (!db) {
         initDb(function(err) {});
@@ -117,9 +124,16 @@ app.get('/', function(req, res,  next) {
     }
 });
 
-app.get('/categories', categoriesController.all); // Просмотр всех категорий
+app.route('/categories')
+    .options(function(req, res) {
+        console.log("options");
+        res.send("OPTIONS");
+    })
+    .get(categoriesController.all) // Просмотр всех категорий
+    .post(categoriesController.create);
+// Добавление новой категории
+
 app.get('/categories/:id', categoriesController.findById); // Просмотр категории id
-app.post('/categories', categoriesController.create); // Добавление новой категории
 app.put('/categories/:id', categoriesController.update); // Обновление категории id
 app.delete('/categories/:id', categoriesController.delete); // Удаление категории id
 

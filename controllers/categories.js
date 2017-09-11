@@ -6,7 +6,7 @@ exports.all = function(req, res) {
             console.log(err);
             return res.sendStatus(500);
         }
-        return res.json(200, docs);
+        return res.json(docs);
     });
 };
 
@@ -16,7 +16,7 @@ exports.findById = function(req, res) {
             console.log(err);
             return res.sendStatus(500);
         }
-        return res.json(200, docs);
+        return res.json(docs);
     });
 };
 
@@ -34,7 +34,7 @@ exports.create = function(req, res) {
             console.log(err);
             res.sendStatus(500);
         }
-        res.json(200, category);
+        res.json(category);
     });
 };
 
@@ -49,7 +49,7 @@ exports.update = function(req, res) {
             console.log(err);
             res.sendStatus(500);
         }
-        res.json(200, category);
+        res.json(category);
     });
 };
 
@@ -59,6 +59,6 @@ exports.delete = function(req, res) {
             console.log(err);
             res.sendStatus(500);
         }
-        res.json(200);
+        res.sendStatus(200);
     })
 }
