@@ -22,6 +22,8 @@ exports.findById = function(req, res) {
 
 exports.create = function(req, res) {
     console.log(req.body);
+    if (!req.body)
+        res.sendStatus(400);
     var category = {
         name: req.body.name,
         products: [],

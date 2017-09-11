@@ -8,7 +8,17 @@ var express = require('express'),
     objectId = require('mongodb').ObjectID;
 var categoriesController = require('./controllers/categories');
 Object.assign = require('object-assign')
-var jsonParser = bodyParser.json()
+
+// parse application/x-www-form-urlencoded 
+app.use(bodyParser.urlencoded({ extended: false }))
+    // parse application/json 
+app.use(bodyParser.json())
+app.use(function(req, res) {
+    res.setHeader('Content-Type', 'text/plain')
+    res.write('you posted:\n')
+    res.end(JSON.stringify(req.body, null, 2))
+})
+
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
 app.use(cors());
@@ -109,8 +119,8 @@ app.get('/', function(req, res,  next) {
 
 app.get('/categories', categoriesController.all); // Просмотр всех категорий
 app.get('/categories/:id', categoriesController.findById); // Просмотр категории id
-app.post('/categories', jsonParser, categoriesController.create); // Добавление новой категории
-app.put('/categories/:id', jsonParser, categoriesController.update); // Обновление категории id
+app.post('/categories', categoriesController.create); // Добавление новой категории
+app.put('/categories/:id', categoriesController.update); // Обновление категории id
 app.delete('/categories/:id', categoriesController.delete); // Удаление категории id
 
 app.get('/pagecount', function(req, res) {
