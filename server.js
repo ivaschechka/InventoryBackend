@@ -8,6 +8,8 @@ var express = require('express'),
     objectId = require('mongodb').ObjectID;
 var categoriesController = require('./controllers/categories');
 Object.assign = require('object-assign')
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
@@ -18,8 +20,6 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
