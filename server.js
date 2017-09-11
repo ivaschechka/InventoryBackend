@@ -15,29 +15,26 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
-app.use(cors());
 app.use(function(req, res, next) {
-    console.log(req.method);
     if (req.method === 'OPTIONS') {
-        console.log('!OPTIONS');
         var headers = {};
         // IE8 does not allow domains to be specified, just the *
         // headers["Access-Control-Allow-Origin"] = req.headers.origin;
         headers["Access-Control-Allow-Origin"] = "*";
-        headers["Access-Control-Allow-Methods"] = "OPTIONS";
+        headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";
         headers["Access-Control-Allow-Credentials"] = false;
         headers["Access-Control-Max-Age"] = '86400'; // 24 hours
         headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept";
         res.writeHead(200, headers);
-        next();
+        res.end();
     } else {
         res.header('Access-Control-Allow-Origin', req.headers.origin);
-        res.header("Access-Control-Allow-Methods", "GET, POST, PUT");
+        res.header("Access-Control-Allow-Methods", "OPTIONS, GET, POST, PUT");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         next();
     }
 });
-
+app.use(cors());
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
     mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
@@ -126,10 +123,6 @@ app.get('/', function(req, res,  next) {
 });
 
 app.route('/categories')
-    .options(function(req, res) {
-        console.log("options");
-        res.send("OPTIONS");
-    })
     .get(categoriesController.all) // Просмотр всех категорий
     .post(categoriesController.create);
 // Добавление новой категории
