@@ -16,22 +16,22 @@ app.use(bodyParser.json())
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
 
-// app.use(function(req, res, next) {
-//     console.log("SDSDADASD");
-//     if (req.method === 'OPTIONS') {
-//         res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
-//         res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
-//         res.header('Access-Control-Allow-Credentials', false);
-//         res.header('Access-Control-Max-Age', '86400');
-//         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//         res.sendStatus(200);
-//     } else {
-//         res.header('Access-Control-Allow-Origin', "*");
-//         res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//         next();
-//     }
-// });
+app.use(function(req, res, next) {
+    console.log("SDSDADASD");
+    if (req.method === 'OPTIONS') {
+        res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
+        res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
+        res.header('Access-Control-Allow-Credentials', false);
+        res.header('Access-Control-Max-Age', '86400');
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.sendStatus(200);
+    } else {
+        res.header('Access-Control-Allow-Origin', "*");
+        res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        next();
+    }
+});
 
 // app.use(cors());
 var corsOptionsDelegate = function(req, callback) {
@@ -95,12 +95,12 @@ var initDb = function(callback) {
     });
 };
 
-app.options("*", function(req, res, next) {
-    console.log("!)(!($)($()!");
-    res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.sendStatus(200);
-});
+// app.options("*", function(req, res, next) {
+//     console.log("!)(!($)($()!");
+//     res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
+//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//     res.sendStatus(200);
+// });
 
 app.get('/data/migration', function(req, res) {
     if (!db) {
@@ -140,7 +140,7 @@ app.get('/', function(req, res,  next) {
         res.send("O-o-o");
     }
 });
-app.options("/categories", cors(corsOptionsDelegate))
+app.options("/categories", cors())
 app.route('/categories')
     .get(categoriesController.all) // Просмотр всех категорий
     .post(categoriesController.create);
