@@ -95,12 +95,12 @@ var initDb = function(callback) {
     });
 };
 
-// app.options("*", function(req, res, next) {
-//     console.log("!)(!($)($()!");
-//     res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
-//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//     res.sendStatus(200);
-// });
+app.options("*", function(req, res, next) {
+    console.log("!)(!($)($()!");
+    res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.sendStatus(200);
+});
 
 app.get('/data/migration', function(req, res) {
     if (!db) {
