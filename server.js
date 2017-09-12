@@ -15,13 +15,26 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
+app.options("*", function(req, res, next) {
+    console.log("!)(!($)($()!");
+    res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    //other headers here
+    res.status(200).end();
+});
 app.use(function(req, res, next) {
     if (req.method === 'OPTIONS') {
-        res.header('Access-Control-Allow-Origin', "*");
+        res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
         res.header('Access-Control-Allow-Credentials', false);
         res.header('Access-Control-Max-Age', '86400');
-        res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+        res.status(200).end();
+        // res.header('Access-Control-Allow-Origin', "*");
+        // res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
+        // res.header('Access-Control-Allow-Credentials', false);
+        // res.header('Access-Control-Max-Age', '86400');
+        // res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
         res.end();
     } else {
         res.header('Access-Control-Allow-Origin', "*");
@@ -78,6 +91,8 @@ var initDb = function(callback) {
         console.log('Connected to MongoDB at: %s', mongoURL);
     });
 };
+
+
 
 app.get('/data/migration', function(req, res) {
     if (!db) {
