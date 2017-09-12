@@ -33,18 +33,18 @@ app.use(morgan('combined'))
 //     }
 // });
 
-app.use(cors());
-// var corsOptionsDelegate = function(req, callback) {
-//     var corsOptions = {
-//         origin: true,
-//         methods: "POST, GET, PUT, DELETE, OPTIONS",
-//         allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept",
-//         credentials: true,
-//         preflightContinue: true
-//     }
+// app.use(cors());
+var corsOptionsDelegate = function(req, callback) {
+    var corsOptions = {
+        origin: true,
+        methods: "POST, GET, PUT, DELETE, OPTIONS",
+        allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept",
+        credentials: true,
+        preflightContinue: true
+    }
 
-//     callback(null, corsOptions) // callback expects two parameters: error and options 
-// }
+    callback(null, corsOptions) // callback expects two parameters: error and options 
+}
 
 // app.use(cors(corsOptionsDelegate));
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
@@ -95,12 +95,12 @@ var initDb = function(callback) {
     });
 };
 
-app.options("*", function(req, res, next) {
-    console.log("!)(!($)($()!");
-    res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.sendStatus(200);
-});
+// app.options("*", function(req, res, next) {
+//     console.log("!)(!($)($()!");
+//     res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
+//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//     res.sendStatus(200);
+// });
 
 app.get('/data/migration', function(req, res) {
     if (!db) {
@@ -140,7 +140,7 @@ app.get('/', function(req, res,  next) {
         res.send("O-o-o");
     }
 });
-
+app.options("/categories", cors(corsOptionsDelegate))
 app.route('/categories')
     .get(categoriesController.all) // Просмотр всех категорий
     .post(categoriesController.create);
