@@ -15,23 +15,21 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
-
-// app.use(function(req, res, next) {
-//     console.log("SDSDADASD");
-//     if (req.method === 'OPTIONS') {
-//         res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
-//         res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
-//         res.header('Access-Control-Allow-Credentials', false);
-//         res.header('Access-Control-Max-Age', '86400');
-//         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//         res.next();
-//     } else {
-//         res.header('Access-Control-Allow-Origin', "*");
-//         res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//         next();
-//     }
-// });
+app.options("*", cors());
+app.use(function(req, res, next) {
+    console.log("SDSDADASD");
+    if (req.method === 'OPTIONS') {
+        res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
+        res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.sendStatus(200);
+    } else {
+        res.header('Access-Control-Allow-Origin', "*");
+        res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        next();
+    }
+});
 
 // app.use(cors());
 var corsOptionsDelegate = function(req, callback) {
@@ -46,7 +44,7 @@ var corsOptionsDelegate = function(req, callback) {
     callback(null, corsOptions) // callback expects two parameters: error and options 
 }
 
-app.use(cors(corsOptionsDelegate));
+// app.use(cors(corsOptionsDelegate));
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
     mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
@@ -95,12 +93,7 @@ var initDb = function(callback) {
     });
 };
 
-app.options("*", function(req, res, next) {
-    console.log("!)(!($)($()!");
-    res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.sendStatus(200);
-});
+
 
 app.get('/data/migration', function(req, res) {
     if (!db) {
@@ -143,8 +136,7 @@ app.get('/', function(req, res,  next) {
 
 app.route('/categories')
     .get(categoriesController.all) // Просмотр всех категорий
-    .post(categoriesController.create);
-// Добавление новой категории
+    .post(categoriesController.create); // Добавление новой категории
 
 app.get('/categories/:id', categoriesController.findById); // Просмотр категории id
 app.put('/categories/:id', categoriesController.update); // Обновление категории id
