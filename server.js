@@ -1,23 +1,55 @@
 var express = require('express'),
     fs = require('fs'),
     app = express(),
+    cookieParser = require('cookie-parser'),
+    session = require('express-session'),
+    mongoDBStore = require('connect-mongodb-session')(session),
     eps = require('ejs'),
     morgan = require('morgan'),
     cors  =  require('cors'),
     bodyParser = require('body-parser'),
-    objectId = require('mongodb').ObjectID;
-var categoriesController = require('./controllers/categories');
-Object.assign = require('object-assign')
-
-// parse application/x-www-form-urlencoded 
+    objectId = require('mongodb').ObjectID,
+    categoriesController = require('./controllers/categories');
+var crypto = require("crypto-js");
+var secretPass = '89jsdfk891enjkasd89';
+Object.assign = require('object-assign');
 app.use(bodyParser.urlencoded({ extended: false }))
-    // parse application/json 
 app.use(bodyParser.json())
+
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
+var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8070,
+    ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
+    mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
+    mongoURLLabel = "";
+
+if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
+    var mongoServiceName = process.env.DATABASE_SERVICE_NAME.toUpperCase(),
+        mongoHost = process.env[mongoServiceName + '_SERVICE_HOST'],
+        mongoPort = process.env[mongoServiceName + '_SERVICE_PORT'],
+        mongoDatabase = process.env[mongoServiceName + '_DATABASE'],
+        mongoPassword = process.env[mongoServiceName + '_PASSWORD']
+    mongoUser = process.env[mongoServiceName + '_USER'];
+
+    if (mongoHost && mongoPort && mongoDatabase) {
+        mongoURLLabel = mongoURL = 'mongodb://';
+        if (mongoUser && mongoPassword) {
+            mongoURL += mongoUser + ':' + mongoPassword + '@';
+        }
+        // Provide UI label that excludes user id and pw
+        mongoURLLabel += mongoHost + ':' + mongoPort + '/' + mongoDatabase;
+        mongoURL += mongoHost + ':' + mongoPort + '/' + mongoDatabase;
+
+    }
+}
+app.use(cookieParser());
+app.use(session({
+    secret: "It's gomel,detka",
+    store: new mongoDBStore({ uri: mongoURL }),
+    cookie: { httpOnly: true, maxAge: null }
+}));
 app.options("*", cors());
 app.use(function(req, res, next) {
-    console.log("SDSDADASD");
     if (req.method === 'OPTIONS') {
         res.header("Access-Control-Allow-Origin", req.get("Origin") || "*");
         res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
@@ -43,32 +75,6 @@ var corsOptionsDelegate = function(req, callback) {
 
     callback(null, corsOptions) // callback expects two parameters: error and options 
 }
-
-// app.use(cors(corsOptionsDelegate));
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
-    ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
-    mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
-    mongoURLLabel = "";
-
-if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
-    var mongoServiceName = process.env.DATABASE_SERVICE_NAME.toUpperCase(),
-        mongoHost = process.env[mongoServiceName + '_SERVICE_HOST'],
-        mongoPort = process.env[mongoServiceName + '_SERVICE_PORT'],
-        mongoDatabase = process.env[mongoServiceName + '_DATABASE'],
-        mongoPassword = process.env[mongoServiceName + '_PASSWORD']
-    mongoUser = process.env[mongoServiceName + '_USER'];
-
-    if (mongoHost && mongoPort && mongoDatabase) {
-        mongoURLLabel = mongoURL = 'mongodb://';
-        if (mongoUser && mongoPassword) {
-            mongoURL += mongoUser + ':' + mongoPassword + '@';
-        }
-        // Provide UI label that excludes user id and pw
-        mongoURLLabel += mongoHost + ':' + mongoPort + '/' + mongoDatabase;
-        mongoURL += mongoHost + ':' + mongoPort + '/' + mongoDatabase;
-
-    }
-}
 var db = null,
     dbDetails = new Object();
 
@@ -93,8 +99,6 @@ var initDb = function(callback) {
     });
 };
 
-
-
 app.get('/data/migration', function(req, res) {
     if (!db) {
         initDb(function(err) {});
@@ -102,6 +106,8 @@ app.get('/data/migration', function(req, res) {
     if (db) {
         var dataCategories = db.collection('categories');
         dataCategories.remove({});
+        var users = db.collection('users');
+        users.remove({});
         categories = require('./migration');
         dataCategories.insert(categories, function(err, result) {
             if (err)
@@ -130,31 +136,85 @@ app.get('/', function(req, res,  next) {
             res.json(200, docs);
         });
     } else {
-        res.send("O-o-o");
+        res.sendStatus(500);
     }
 });
 
+app.route('/login')
+    .post(function(req, res) {
+        if (!db) {
+            initDb(function(err) {});
+        }
+        if (db) {
+            var col = db.collection('users');
+            var log = req.body.login;
+            var passw = crypto.AES.encrypt(req.body.password, secretPass).toString();
+            col.findOne({ login: log, password: passw },
+                function(err, docs) {
+                    if (err) {
+                        console.log(err);
+                        req.session.authorized = false;
+                        res.sendStatus(500);
+                        return;
+                    }
+                    req.session.authorized = true;
+                    res.sendStatus(200);
+                });
+        }
+    });
+app.route('/register')
+    .get(function(req, res) {
+        if (!db) {
+            initDb(function(err) {});
+        }
+        if (db) {
+            var col = db.collection('users');
+            col.find().toArray(function(err, docs) {
+                if (err) {
+                    console.log(err);
+                    res.sendStatus(500);
+                    return;
+                }
+                res.send(200, docs);
+            })
+        }
+    })
+    .post(function(req, res) {
+        if (!db) {
+            initDb(function(err) {});
+        }
+        if (db) {
+            var col = db.collection('users');
+            var enc = crypto.AES.encrypt(req.body.password, secretPass).toString();
+            var user = {
+                login: req.body.login,
+                email: req.body.email,
+                password: enc
+            }
+            console.log(enc);
+            col.insert(user, function(err, result) {
+                if (err) {
+                    console.log(err);
+                    res.sendStatus(500);
+                    return;
+                }
+                req.session.authorized = true;
+                res.sendStatus(200);
+            });
+        }
+    });
 app.route('/categories')
     .get(categoriesController.all) // Просмотр всех категорий
     .post(categoriesController.create); // Добавление новой категории
 
-app.get('/categories/:id', categoriesController.findById); // Просмотр категории id
-app.put('/categories/:id', categoriesController.update); // Обновление категории id
-app.delete('/categories/:id', categoriesController.delete); // Удаление категории id
+app.route('/categories/:id')
+    .get(categoriesController.findById) // Просмотр категории id
+    .put(categoriesController.update) // Обновление категории id
+    .delete(categoriesController.delete); // Удаление категории id
 
 app.get('/pagecount', function(req, res) {
-    // try to initialize the db on every request if it's not already
-    // initialized.
-    if (!db) {
-        initDb(function(err) {});
-    }
-    if (db) {
-        db.collection('categories').count(function(err, count) {
-            res.send('{ categories: ' + count + '}');
-        });
-    } else {
-        res.send('{ pageCount: -1 }');
-    }
+    console.log(req.session.authorized);
+    res.send('Hello!!!');
 });
 
 // error handling
