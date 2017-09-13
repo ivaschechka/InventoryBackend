@@ -1,16 +1,16 @@
 var express = require('express'),
     fs = require('fs'),
     app = express(),
-    cookieParser = require('cookie-parser'),
-    session = require('express-session'),
-    mongoDBStore = require('connect-mongodb-session')(session),
+    // cookieParser = require('cookie-parser'),
+    // session = require('express-session'),
+    // mongoDBStore = require('connect-mongodb-session')(session),
     eps = require('ejs'),
     morgan = require('morgan'),
     cors  =  require('cors'),
     bodyParser = require('body-parser'),
     objectId = require('mongodb').ObjectID,
     categoriesController = require('./controllers/categories');
-var crypto = require("crypto-js");
+// var crypto = require("crypto-js");
 var secretPass = '89jsdfk891enjkasd89';
 Object.assign = require('object-assign');
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -42,12 +42,12 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 
     }
 }
-app.use(cookieParser());
-app.use(session({
-    secret: "It's gomel,detka",
-    store: new mongoDBStore({ uri: mongoURL }),
-    cookie: { httpOnly: true, maxAge: null }
-}));
+// app.use(cookieParser());
+// app.use(session({
+//     secret: "It's gomel,detka",
+//     store: new mongoDBStore({ uri: mongoURL }),
+//     cookie: { httpOnly: true, maxAge: null }
+// }));
 app.options("*", cors());
 app.use(function(req, res, next) {
     if (req.method === 'OPTIONS') {
@@ -140,69 +140,69 @@ app.get('/', function(req, res,  next) {
     }
 });
 
-app.route('/login')
-    .post(function(req, res) {
-        if (!db) {
-            initDb(function(err) {});
-        }
-        if (db) {
-            var col = db.collection('users');
-            var log = req.body.login;
-            var passw = crypto.AES.encrypt(req.body.password, secretPass).toString();
-            col.findOne({ login: log, password: passw },
-                function(err, docs) {
-                    if (err) {
-                        console.log(err);
-                        req.session.authorized = false;
-                        res.sendStatus(500);
-                        return;
-                    }
-                    req.session.authorized = true;
-                    res.sendStatus(200);
-                });
-        }
-    });
-app.route('/register')
-    .get(function(req, res) {
-        if (!db) {
-            initDb(function(err) {});
-        }
-        if (db) {
-            var col = db.collection('users');
-            col.find().toArray(function(err, docs) {
-                if (err) {
-                    console.log(err);
-                    res.sendStatus(500);
-                    return;
-                }
-                res.send(200, docs);
-            })
-        }
-    })
-    .post(function(req, res) {
-        if (!db) {
-            initDb(function(err) {});
-        }
-        if (db) {
-            var col = db.collection('users');
-            var enc = crypto.AES.encrypt(req.body.password, secretPass).toString();
-            var user = {
-                login: req.body.login,
-                email: req.body.email,
-                password: enc
-            }
-            console.log(enc);
-            col.insert(user, function(err, result) {
-                if (err) {
-                    console.log(err);
-                    res.sendStatus(500);
-                    return;
-                }
-                req.session.authorized = true;
-                res.sendStatus(200);
-            });
-        }
-    });
+// app.route('/login')
+//     .post(function(req, res) {
+//         if (!db) {
+//             initDb(function(err) {});
+//         }
+//         if (db) {
+//             var col = db.collection('users');
+//             var log = req.body.login;
+//             var passw = crypto.AES.encrypt(req.body.password, secretPass).toString();
+//             col.findOne({ login: log, password: passw },
+//                 function(err, docs) {
+//                     if (err) {
+//                         console.log(err);
+//                         req.session.authorized = false;
+//                         res.sendStatus(500);
+//                         return;
+//                     }
+//                     req.session.authorized = true;
+//                     res.sendStatus(200);
+//                 });
+//         }
+//     });
+// app.route('/register')
+//     .get(function(req, res) {
+//         if (!db) {
+//             initDb(function(err) {});
+//         }
+//         if (db) {
+//             var col = db.collection('users');
+//             col.find().toArray(function(err, docs) {
+//                 if (err) {
+//                     console.log(err);
+//                     res.sendStatus(500);
+//                     return;
+//                 }
+//                 res.send(200, docs);
+//             })
+//         }
+//     })
+//     .post(function(req, res) {
+//         if (!db) {
+//             initDb(function(err) {});
+//         }
+//         if (db) {
+//             var col = db.collection('users');
+//             var enc = crypto.AES.encrypt(req.body.password, secretPass).toString();
+//             var user = {
+//                 login: req.body.login,
+//                 email: req.body.email,
+//                 password: enc
+//             }
+//             console.log(enc);
+//             col.insert(user, function(err, result) {
+//                 if (err) {
+//                     console.log(err);
+//                     res.sendStatus(500);
+//                     return;
+//                 }
+//                 req.session.authorized = true;
+//                 res.sendStatus(200);
+//             });
+//         }
+//     });
 app.route('/categories')
     .get(categoriesController.all) // Просмотр всех категорий
     .post(categoriesController.create); // Добавление новой категории
