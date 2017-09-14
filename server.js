@@ -43,12 +43,12 @@ app.use(bodyParser.json())
 
 app.use(morgan('combined'))
 
-// app.use(cookieParser());
-// app.use(session({
-//     secret: "89ksmnfa9fhaspfmk",
-//     store: new mongoDBStore({ uri: mongoURL }),
-//     cookie: { httpOnly: true, maxAge: null }
-// }));
+app.use(cookieParser());
+app.use(session({
+    secret: "89ksmnfa9fhaspfmk",
+    store: new mongoDBStore({ uri: mongoURL }),
+    cookie: { httpOnly: true, maxAge: null }
+}));
 
 app.options("*", cors());
 app.use(function(req, res, next) {
@@ -70,16 +70,13 @@ var db = null,
 var secretPass = '89jsdfk891enjkasd89';
 
 var initDb = function(callback) {
-    if (mongoURL == null) {
-        //mongoURL = 'mongodb://127.0.0.1:27017';
-        return;
-    }
+    if (mongoURL == null)
+        mongoURL = 'mongodb://127.0.0.1:27017';
     mongodb.connect(mongoURL, function(err, conn) {
         if (err) {
             callback(err);
             return;
         }
-
         db = mongodb.get();
         dbDetails.databaseName = db.databaseName;
         dbDetails.url = mongoURLLabel;
@@ -112,24 +109,24 @@ app.get('/data/migration', function(req, res) {
 
 
 app.get('/', function(req, res,  next) {
-    // if (!db) {
-    //     initDb(function(err) {
-    //         if (err)
-    //             console.log(err);
-    //     });
-    // }
-    // if (db) {
-    //     var col = db.collection('categories');
-    //     col.find().toArray(function(err, docs) {
-    //         if (err) {
-    //             console.log(err);
-    //             return res.sendStatus(500);
-    //         }
-    //         res.json(200, docs);
-    //     });
-    // } else {
-    //     res.sendStatus(500);
-    // }
+    if (!db) {
+        initDb(function(err) {
+            if (err)
+                console.log(err);
+        });
+    }
+    if (db) {
+        var col = db.collection('categories');
+        col.find().toArray(function(err, docs) {
+            if (err) {
+                console.log(err);
+                return res.sendStatus(500);
+            }
+            res.json(200, docs);
+        });
+    } else {
+        res.sendStatus(500);
+    }
     res.sendStatus(200);
 });
 
@@ -207,9 +204,9 @@ app.route('/categories/:id')
     .delete(categoriesController.delete); // Удаление категории id
 
 app.get('/pagecount', function(req, res) {
-    // if (req.session.authorized)
-    //     console.log(req.session.authorized);
-    res.send('Hello!!!');
+    if (req.session.authorized)
+        console.log(req.session.authorized);
+    res.send('Test!!!');
 });
 
 // error handling

@@ -3,21 +3,12 @@ var server = require('../server'),
     chaiHTTP = require('chai-http'),
     should = chai.should();
 
+
 chai.use(chaiHTTP);
 
 reqServer = server
 
 describe('Basic routes tests', function() {
-
-    it('GET to / should return 200', function(done) {
-        chai.request(reqServer)
-            .get('/')
-            .end(function(err, res) {
-                res.should.have.status(200);
-                done();
-            })
-
-    })
 
     it('GET to /pagecount should return 200', function(done) {
         chai.request(reqServer)
