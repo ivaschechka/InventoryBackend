@@ -2,20 +2,17 @@ var express = require('express'),
     app = express(),
     cookieParser = require('cookie-parser'),
     cors  =  require('cors'),
+    morgan = require('morgan'),
     bodyParser = require('body-parser'),
     session = require('express-session'),
     mongoDBStore = require('connect-mongodb-session')(session),
     crypto = require("crypto-js"),
-    morgan = require('morgan'),
     mongodb = require('./db'),
     objectId = require('mongodb').ObjectID,
     categoriesController = require('./controllers/categories');
+
+
 Object.assign = require('object-assign');
-
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
-
-app.use(morgan('combined'))
 
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     ip = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
@@ -41,12 +38,17 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 
     }
 }
-app.use(cookieParser());
-app.use(session({
-    secret: "89ksmnfa9fhaspfmk",
-    store: new mongoDBStore({ uri: mongoURL }),
-    cookie: { httpOnly: true, maxAge: null }
-}));
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
+app.use(morgan('combined'))
+
+// app.use(cookieParser());
+// app.use(session({
+//     secret: "89ksmnfa9fhaspfmk",
+//     store: new mongoDBStore({ uri: mongoURL }),
+//     cookie: { httpOnly: true, maxAge: null }
+// }));
 
 app.options("*", cors());
 app.use(function(req, res, next) {
