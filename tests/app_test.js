@@ -5,7 +5,7 @@ var server = require('../server'),
 
 chai.use(chaiHTTP);
 
-reqServer = process.env.HTTP_TEST_SERVER || server
+reqServer = server
 
 describe('Basic routes tests', function() {
 

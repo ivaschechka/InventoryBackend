@@ -70,8 +70,10 @@ var db = null,
 var secretPass = '89jsdfk891enjkasd89';
 
 var initDb = function(callback) {
-    if (mongoURL == null)
-        mongoURL = 'mongodb://127.0.0.1:27017'
+    if (mongoURL == null) {
+        console.log("aaaaaaaaaaaaaaaaaaaaa");
+        mongoURL = 'mongodb://127.0.0.1:27017';
+    }
     mongodb.connect(mongoURL, function(err, conn) {
         if (err) {
             callback(err);
