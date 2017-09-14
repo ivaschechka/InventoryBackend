@@ -71,8 +71,8 @@ var secretPass = '89jsdfk891enjkasd89';
 
 var initDb = function(callback) {
     if (mongoURL == null) {
-        console.log("aaaaaaaaaaaaaaaaaaaaa");
-        mongoURL = 'mongodb://127.0.0.1:27017';
+        //mongoURL = 'mongodb://127.0.0.1:27017';
+        return;
     }
     mongodb.connect(mongoURL, function(err, conn) {
         if (err) {
